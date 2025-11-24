@@ -16,22 +16,34 @@ Aplicación que analiza una foto facial para identificar la emoción dominante c
 - Backend: `lambda_fuction.py` (handler `lambda_handler`), expuesto via API Gateway (método POST y OPTIONS).
 - Base de datos: `consejos.db` (SQLite) con tablas `Usuarios` y `Consejos`. Se genera con `crear_bd.py`.
 
+### Arquitectura Tecnológica
+
+  | Capa | Tecnología | Versión | Justificación |
+  |------|------------|---------|---------------|
+  | Frontend | HTML5/CSS3/JS | - | Compatibilidad universal |
+  | Backend | Python/Flask | 3.8+ | Desarrollo rápido |
+  | Procesamiento | AWS Lambda | - | Escalabilidad automática |
+  | IA | AWS Rekognition | - | Precisión sin entrenamiento |
+  | Base de Datos | SQLite | 3.x | Simplicidad para MVP |
+
 Flujo lógico (alto nivel):
 1. Frontend envía `POST` a API Gateway → Lambda.
 2. Lambda decodifica imagen (base64), llama a `Rekognition:DetectFaces`, determina emoción.
 3. Lambda busca 3 consejos aleatorios por emoción en `SQLite` y responde JSON.
 4. Frontend muestra emoción, confianza y las técnicas.
-
-### 2.1) ¿Por qué esta arquitectura? Alternativas y trade‑offs
-- AWS Lambda + API Gateway
-  - Por qué: costo bajo en reposo, escalado automático, cero servidores que administrar. Ideal para cargas variables y POC.
-  - Alternativas: EC2/ECS/Fargate (más control y estado persistente); Cloud Run (GCP) o Azure Functions (Azure).
-  - Trade‑offs: frío de arranque ocasional; límites de tiempo/espacio; complejidad en estado (se recomienda externo).
-- BD empaquetada (SQLite) dentro de Lambda
-  - Por qué: simplicidad, cero dependencias externas, latencia muy baja para lecturas.
-  - Alternativas: DynamoDB (sin servidor, alta escala), RDS/Aurora (SQL gestionado), S3 + caché en memoria.
-  - Trade‑offs: escritura limitada a `/tmp`; concurrencia con escrituras concurrentes no recomendable; no ideal para multi‑tenant a gran escala.
-
+   
+   ```mermaid
+      graph TD
+          A[CLIENTE<br>Browser] --> B[API GATEWAY<br>AWS]
+          B --> C[LAMBDA<br>Python]
+          C --> D[REKOGNITION<br>AWS]
+          D --> E[SQLITE<br>Local]
+      
+          style A fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+          style B fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+          style C fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+          style D fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+          style E fill:#fce4ec,stroke:#c2185b,stroke-width:2px
 
 ## 3) Estructura del proyecto
 ```
